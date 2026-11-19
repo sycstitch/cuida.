@@ -320,7 +320,7 @@ $("br-submit").addEventListener("click", function () {
     pee || "",
     colors.join(", "),
     bristol.slice().sort().join(", "),
-    bloodPicked ? "blood" : "no blood",
+    bloodPicked ? "blood" : "",
     "",
   ];
   submitLog("Bathroom Log", row, parts.join("; "), function () {
