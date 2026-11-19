@@ -2,11 +2,12 @@
 // the apps script backend is never cached: log posts always go to the
 // network, and if they fail the offline queue in api.js holds the entry.
 
-const CACHE = "health-log-v4";
+const CACHE = "cuida-v1";
 const SHELL = [
   "./",
   "./index.html",
   "./styles.css",
+  "./js/config.js",
   "./js/api.js",
   "./js/app.js",
   "./js/dashboard.js",
@@ -14,6 +15,10 @@ const SHELL = [
   "./assets/bristol.webp",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
+  "./assets/icon-192-maskable.png",
+  "./assets/icon-512-maskable.png",
+  "./assets/apple-touch-icon.png",
+  "./assets/favicon.png",
 ];
 
 self.addEventListener("install", function (event) {

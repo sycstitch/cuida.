@@ -1,21 +1,40 @@
-/* health log — charcoal, quiet, no clutter.
-   accents: forest green, sage gray, taupe, amber, dusty mauve. */
+/* cuida. — warm cream + mauve, matching the health log space in muse.
+   light first, dark via prefers-color-scheme. accents: the space's
+   #7c2d52 (light) / #d16a9e (dark). */
 
 :root {
-  --bg: #17181a;
-  --card: #222326;
-  --card-2: #2a2b2e;
-  --line: #33353a;
-  --text: #e8e6e1;
-  --muted: #9a978f;
-  --forest: #4a7c59;
-  --forest-soft: #5c8a6a;
-  --sage: #9caf9b;
-  --taupe: #b8a894;
-  --amber: #d9a441;
-  --mauve: #b48a9a;
-  --red: #b04a4a;
-  --orange: #c97b4a;
+  color-scheme: light dark;
+  --bg: #faf6ef;
+  --surface: #fffdf8;
+  --surface-alt: #f3ecdd;
+  --text: #292019;
+  --dim: #7a6a58;
+  --border: #e7dcc8;
+  --accent: #7c2d52;
+  --on-accent: #fffdf8;
+  --radius: 14px;
+  --bg-trans: rgba(250, 246, 239, 0.96);
+  --ring: rgba(41, 32, 25, 0.35);
+  --red: #dc2626;
+  --red-text: #b91c1c;
+  --warn: #b45309;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171310;
+    --surface: #221c17;
+    --surface-alt: #2c241c;
+    --text: #efe7dc;
+    --dim: #a8947e;
+    --border: #3a2e24;
+    --accent: #d16a9e;
+    --on-accent: #221c17;
+    --bg-trans: rgba(23, 19, 16, 0.96);
+    --ring: rgba(239, 231, 220, 0.45);
+    --red-text: #f0a0a0;
+    --warn: #eab308;
+  }
 }
 
 * { box-sizing: border-box; }
@@ -30,14 +49,17 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-h1 { font-size: 1.25rem; margin: 0; font-weight: 600; letter-spacing: 0.01em; }
-h2 { font-size: 1.05rem; margin: 0 0 0.5rem; font-weight: 600; }
+h1, h2, .section-head, .tab {
+  font-family: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+h1 { font-size: 1.35rem; margin: 0; font-weight: 800; letter-spacing: 0.01em; }
+h2 { font-size: 1.05rem; margin: 0 0 0.5rem; font-weight: 700; }
 h3 {
   font-size: 0.8rem;
   margin: 1rem 0 0.4rem;
   font-weight: 600;
   text-transform: lowercase;
-  color: var(--muted);
+  color: var(--dim);
   letter-spacing: 0.04em;
 }
 h3:first-child { margin-top: 0; }
@@ -52,8 +74,8 @@ h3:first-child { margin-top: 0; }
 
 .queue {
   font-size: 0.8rem;
-  color: var(--amber);
-  border: 1px solid var(--amber);
+  color: var(--warn);
+  border: 1px solid var(--warn);
   border-radius: 999px;
   padding: 0.1rem 0.6rem;
 }
@@ -65,9 +87,9 @@ main {
 }
 
 .card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 0.9rem;
   margin-bottom: 0.75rem;
 }
@@ -79,24 +101,32 @@ main {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(23, 24, 26, 0.96);
-  border-bottom: 1px solid var(--line);
+  background: var(--bg-trans);
+  border-bottom: 1px solid var(--border);
 }
-.tabs { display: flex; }
+/* pill tab bar, like the space */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface-alt);
+  border-radius: 999px;
+  padding: 4px;
+  margin: 0 1rem 0.75rem;
+}
 .tab {
   flex: 1;
   border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  background: none;
-  color: var(--muted);
-  padding: 0.5rem 0.5rem 0.6rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dim);
+  padding: 0.45rem 0.5rem;
   font-size: 0.95rem;
+  font-weight: 600;
 }
 .tab.on {
-  color: var(--text);
-  border-bottom-color: var(--forest-soft);
-  font-weight: 600;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
 }
 
 /* collapsible sections */
@@ -109,12 +139,12 @@ main {
   border: none;
   color: var(--text);
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 700;
   padding: 0;
   cursor: pointer;
   text-align: left;
 }
-.chevron { color: var(--muted); font-weight: 400; }
+.chevron { color: var(--dim); font-weight: 400; }
 .collapsible .section-body { display: none; margin-top: 0.8rem; }
 .collapsible.open .section-body { display: block; }
 
@@ -122,67 +152,67 @@ main {
 button {
   font: inherit;
   color: var(--text);
-  background: var(--card-2);
-  border: 1px solid var(--line);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.55rem 0.9rem;
   cursor: pointer;
 }
 button:disabled { opacity: 0.45; cursor: default; }
 button.primary {
-  background: var(--forest);
-  border-color: var(--forest);
-  color: #f2f5f1;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
   margin-top: 0.9rem;
   width: 100%;
-  font-weight: 600;
+  font-weight: 700;
 }
-button.primary:disabled { background: var(--card-2); border-color: var(--line); color: var(--muted); }
-.text-btn { border: none; background: none; color: var(--muted); padding: 0.3rem 0.2rem; }
+button.primary:disabled { background: var(--surface-alt); border-color: var(--border); color: var(--dim); }
+.text-btn { border: none; background: none; color: var(--dim); padding: 0.3rem 0.2rem; }
 
 .chip-row { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 0.4rem; }
 .chip {
   border-radius: 999px;
   padding: 0.4rem 0.85rem;
   font-size: 0.92rem;
-  background: var(--card-2);
+  background: var(--surface-alt);
 }
 .chip.on {
-  background: var(--sage);
-  border-color: var(--sage);
-  color: #17181a;
-  font-weight: 600;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
 }
 /* resting chips are tinted too, not just the selected one.
    selected = full-strength fill; resting = softer tint. swatch chips
    (pee / poop / flow / tampon) get a light ring when selected. */
-/* mood buttons: green -> red */
-.mood-row .chip[data-mood="Great"] { background: rgba(74, 124, 89, 0.35); border-color: rgba(74, 124, 89, 0.65); }
-.mood-row .chip[data-mood="Fine"] { background: rgba(127, 160, 127, 0.3); border-color: rgba(127, 160, 127, 0.6); }
-.mood-row .chip[data-mood="Meh"] { background: rgba(217, 164, 65, 0.3); border-color: rgba(217, 164, 65, 0.6); }
-.mood-row .chip[data-mood="Rough"] { background: rgba(201, 123, 74, 0.32); border-color: rgba(201, 123, 74, 0.65); }
-.mood-row .chip[data-mood="Bad"] { background: rgba(176, 74, 74, 0.35); border-color: rgba(176, 74, 74, 0.65); }
-.mood-row .chip[data-mood="Great"].on { background: var(--forest); border-color: var(--forest); color: #f2f5f1; }
-.mood-row .chip[data-mood="Fine"].on { background: #7fa07f; border-color: #7fa07f; color: #17181a; }
-.mood-row .chip[data-mood="Meh"].on { background: var(--amber); border-color: var(--amber); color: #17181a; }
-.mood-row .chip[data-mood="Rough"].on { background: var(--orange); border-color: var(--orange); color: #17181a; }
-.mood-row .chip[data-mood="Bad"].on { background: var(--red); border-color: var(--red); color: #f2f5f1; }
+/* mood buttons: green -> red (space tokens) */
+.mood-row .chip[data-mood="Great"] { background: rgba(22, 163, 74, 0.14); border-color: rgba(22, 163, 74, 0.45); }
+.mood-row .chip[data-mood="Fine"] { background: rgba(101, 163, 13, 0.14); border-color: rgba(101, 163, 13, 0.45); }
+.mood-row .chip[data-mood="Meh"] { background: rgba(245, 158, 11, 0.16); border-color: rgba(245, 158, 11, 0.5); }
+.mood-row .chip[data-mood="Rough"] { background: rgba(234, 88, 12, 0.14); border-color: rgba(234, 88, 12, 0.45); }
+.mood-row .chip[data-mood="Bad"] { background: rgba(220, 38, 38, 0.12); border-color: rgba(220, 38, 38, 0.45); }
+.mood-row .chip[data-mood="Great"].on { background: #16a34a; border-color: #16a34a; color: #fff; }
+.mood-row .chip[data-mood="Fine"].on { background: #65a30d; border-color: #65a30d; color: #1d2b0a; }
+.mood-row .chip[data-mood="Meh"].on { background: #f59e0b; border-color: #f59e0b; color: #292019; }
+.mood-row .chip[data-mood="Rough"].on { background: #ea580c; border-color: #ea580c; color: #fff; }
+.mood-row .chip[data-mood="Bad"].on { background: #dc2626; border-color: #dc2626; color: #fff; }
 /* severity: the worse it is, the warmer the chip */
-.severity-row .chip[data-severity="Background noise"] { background: rgba(156, 175, 155, 0.28); border-color: rgba(156, 175, 155, 0.6); }
+.severity-row .chip[data-severity="Background noise"] { background: rgba(138, 171, 132, 0.28); border-color: rgba(138, 171, 132, 0.55); }
 .severity-row .chip[data-severity="Bugging me"] { background: rgba(184, 168, 148, 0.3); border-color: rgba(184, 168, 148, 0.6); }
-.severity-row .chip[data-severity="Getting in the way"] { background: rgba(217, 164, 65, 0.3); border-color: rgba(217, 164, 65, 0.6); }
-.severity-row .chip[data-severity="Shut me down"] { background: rgba(176, 74, 74, 0.35); border-color: rgba(176, 74, 74, 0.65); }
-.severity-row .chip[data-severity="Background noise"].on { background: var(--sage); border-color: var(--sage); color: #17181a; }
-.severity-row .chip[data-severity="Bugging me"].on { background: var(--taupe); border-color: var(--taupe); color: #17181a; }
-.severity-row .chip[data-severity="Getting in the way"].on { background: var(--amber); border-color: var(--amber); color: #17181a; }
-.severity-row .chip[data-severity="Shut me down"].on { background: var(--red); border-color: var(--red); color: #f2f5f1; }
+.severity-row .chip[data-severity="Getting in the way"] { background: rgba(245, 158, 11, 0.16); border-color: rgba(245, 158, 11, 0.5); }
+.severity-row .chip[data-severity="Shut me down"] { background: rgba(220, 38, 38, 0.12); border-color: rgba(220, 38, 38, 0.45); }
+.severity-row .chip[data-severity="Background noise"].on { background: #8aab84; border-color: #8aab84; color: #1d2b1a; }
+.severity-row .chip[data-severity="Bugging me"].on { background: #b8a894; border-color: #b8a894; color: #292019; }
+.severity-row .chip[data-severity="Getting in the way"].on { background: #f59e0b; border-color: #f59e0b; color: #292019; }
+.severity-row .chip[data-severity="Shut me down"].on { background: var(--red); border-color: var(--red); color: #fff; }
 /* sleep quality: same idea, subtler */
-.sleep-row .chip[data-sleep="Good"] { background: rgba(74, 124, 89, 0.3); border-color: rgba(74, 124, 89, 0.6); }
-.sleep-row .chip[data-sleep="Okay"] { background: rgba(217, 164, 65, 0.28); border-color: rgba(217, 164, 65, 0.55); }
-.sleep-row .chip[data-sleep="Bad"] { background: rgba(176, 74, 74, 0.32); border-color: rgba(176, 74, 74, 0.6); }
-.sleep-row .chip[data-sleep="Good"].on { background: var(--forest); border-color: var(--forest); color: #f2f5f1; }
-.sleep-row .chip[data-sleep="Okay"].on { background: var(--amber); border-color: var(--amber); color: #17181a; }
-.sleep-row .chip[data-sleep="Bad"].on { background: var(--red); border-color: var(--red); color: #f2f5f1; }
+.sleep-row .chip[data-sleep="Good"] { background: rgba(22, 163, 74, 0.14); border-color: rgba(22, 163, 74, 0.45); }
+.sleep-row .chip[data-sleep="Okay"] { background: rgba(245, 158, 11, 0.16); border-color: rgba(245, 158, 11, 0.5); }
+.sleep-row .chip[data-sleep="Bad"] { background: rgba(220, 38, 38, 0.12); border-color: rgba(220, 38, 38, 0.45); }
+.sleep-row .chip[data-sleep="Good"].on { background: #16a34a; border-color: #16a34a; color: #fff; }
+.sleep-row .chip[data-sleep="Okay"].on { background: #f59e0b; border-color: #f59e0b; color: #292019; }
+.sleep-row .chip[data-sleep="Bad"].on { background: var(--red); border-color: var(--red); color: #fff; }
 /* pee: real swatches, dark text on the light ones */
 .chip.pee-pale { background: #f0e8a6; border-color: #ddd28a; color: #3a3410; }
 .chip.pee-light { background: #f2dd6b; border-color: #d9c44e; color: #3a3410; }
@@ -193,8 +223,8 @@ button.primary:disabled { background: var(--card-2); border-color: var(--line); 
 .chip.pee-dark.on { background: #c79a1f; }
 .chip.pee-amber.on { background: #a96f14; color: #f2f5f1; }
 /* pee: clear is red — a flag to slow down on water */
-.chip.danger { background: rgba(176, 74, 74, 0.25); border-color: var(--red); color: #e8a0a0; }
-.chip.danger.on { background: var(--red); border-color: var(--red); color: #f2f5f1; }
+.chip.danger { background: rgba(220, 38, 38, 0.1); border-color: var(--red); color: var(--red-text); }
+.chip.danger.on { background: var(--red); border-color: var(--red); color: #fff; }
 /* poop colors */
 .chip.poop-brown { background: #8a5a3b; border-color: #74482c; color: #f7ead9; }
 .chip.poop-green { background: #6d8f5a; border-color: #59763f; color: #f2f5f1; }
@@ -225,10 +255,10 @@ button.primary:disabled { background: var(--card-2); border-color: var(--line); 
 .chip.poop-brown.on, .chip.poop-green.on,
 .flow-row .chip.on,
 .chip.tamp-light.on, .chip.tamp-regular.on, .chip.tamp-super.on, .chip.tamp-superplus.on, .chip.tamp-ultra.on {
-  box-shadow: 0 0 0 2px var(--card), 0 0 0 4px rgba(232, 230, 225, 0.6);
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ring);
 }
 /* blood toggle */
-.chip.blood.on { background: var(--red); border-color: var(--red); color: #f2f5f1; }
+.chip.blood.on { background: var(--red); border-color: var(--red); color: #fff; }
 /* bristol numbers sit under the sketch */
 .bristol-row .chip { min-width: 2.6rem; text-align: center; padding: 0.4rem 0.5rem; }
 .bristol-img {
@@ -258,7 +288,7 @@ button.primary:disabled { background: var(--card-2); border-color: var(--line); 
 #water-custom-btn { flex: 0 0 auto; }
 
 /* inputs */
-.field-label { display: block; font-size: 0.85rem; color: var(--muted); margin: 0.7rem 0 0.3rem; }
+.field-label { display: block; font-size: 0.85rem; color: var(--dim); margin: 0.7rem 0 0.3rem; }
 input[type="text"], input[type="number"], input[type="url"],
 input[type="datetime-local"], input[type="date"], input[type="time"],
 select, textarea {
@@ -266,14 +296,13 @@ select, textarea {
   font: inherit;
   color: var(--text);
   background: var(--bg);
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.55rem 0.7rem;
   margin-bottom: 0.35rem;
 }
-input[type="datetime-local"], input[type="date"], input[type="time"] { color-scheme: dark; }
 textarea { resize: vertical; min-height: 2.6rem; }
-code { font-size: 0.85em; color: var(--sage); word-break: break-all; }
+code { font-size: 0.85em; color: var(--accent); word-break: break-all; }
 
 .row { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; }
 .row > * { flex: 1; }
@@ -287,28 +316,28 @@ code { font-size: 0.85em; color: var(--sage); word-break: break-all; }
   .vitals-grid label:last-child { grid-column: span 2; }
 }
 
-.hint { font-size: 0.83rem; color: var(--muted); margin: 0.4rem 0 0; }
-.error { font-size: 0.85rem; color: #e8a0a0; margin: 0.4rem 0; }
+.hint { font-size: 0.83rem; color: var(--dim); margin: 0.4rem 0 0; }
+.error { font-size: 0.85rem; color: var(--red-text); margin: 0.4rem 0; }
 
 /* today list */
 .today-list { list-style: none; margin: 0.5rem 0 0; padding: 0; }
 .today-list li {
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--border);
   padding: 0.55rem 0;
   font-size: 0.93rem;
 }
 .today-list li:first-child { border-top: none; }
-.today-time { color: var(--muted); font-size: 0.82rem; margin-right: 0.4rem; }
+.today-time { color: var(--dim); font-size: 0.82rem; margin-right: 0.4rem; }
 .today-kind {
   font-size: 0.75rem;
-  color: var(--taupe);
-  border: 1px solid var(--line);
+  color: var(--dim);
+  border: 1px solid var(--border);
   border-radius: 999px;
   padding: 0.05rem 0.5rem;
   margin-right: 0.4rem;
   vertical-align: middle;
 }
-.today-note { color: var(--muted); font-size: 0.85rem; }
+.today-note { color: var(--dim); font-size: 0.85rem; }
 .today-note-wrap { position: relative; }
 /* little chevron at the bottom-right of a clamped note: it only exists when
    the note actually overflows. taps pass through it to the note itself. */
@@ -316,7 +345,7 @@ code { font-size: 0.85em; color: var(--sage); word-break: break-all; }
   position: absolute;
   right: 0.1rem;
   bottom: 0.1rem;
-  color: var(--muted);
+  color: var(--dim);
   font-size: 0.9rem;
   line-height: 1;
   pointer-events: none;
@@ -339,14 +368,14 @@ code { font-size: 0.85em; color: var(--sage); word-break: break-all; }
   right: 0;
   bottom: 0;
   height: 1.4em;
-  background: linear-gradient(to bottom, transparent, var(--card));
+  background: linear-gradient(to bottom, transparent, var(--surface));
   pointer-events: none;
 }
 .today-note.clamped.expanded { cursor: pointer; }
 .pill-queued {
   font-size: 0.75rem;
-  color: var(--amber);
-  border: 1px solid var(--amber);
+  color: var(--warn);
+  border: 1px solid var(--warn);
   border-radius: 999px;
   padding: 0.05rem 0.5rem;
   margin-left: 0.3rem;
@@ -357,9 +386,9 @@ code { font-size: 0.85em; color: var(--sage); word-break: break-all; }
 .dash-refresh-row { align-items: center; margin-bottom: 0.5rem; }
 .dash-refresh-row .hint { margin: 0; }
 .stat { margin: 0.25rem 0; font-size: 0.95rem; }
-.stat .big { font-weight: 600; font-size: 1.05rem; }
-.dash-sub { color: var(--muted); font-size: 0.85rem; margin: 0.2rem 0; }
-.dash-empty { color: var(--muted); font-size: 0.9rem; margin: 0.25rem 0; }
+.stat .big { font-weight: 700; font-size: 1.05rem; }
+.dash-sub { color: var(--dim); font-size: 0.85rem; margin: 0.2rem 0; }
+.dash-empty { color: var(--dim); font-size: 0.9rem; margin: 0.25rem 0; }
 
 /* setup overlay */
 .overlay {
@@ -376,12 +405,18 @@ code { font-size: 0.85em; color: var(--sage); word-break: break-all; }
 .overlay-card {
   width: 100%;
   max-width: 480px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 1.25rem;
 }
 .overlay-card .primary { width: 100%; }
+
+/* google sign-in button on the setup screen */
+.gsi-button { display: flex; justify-content: center; margin: 1rem 0 0.5rem; }
+
+/* read-only endpoint url in settings */
+.endpoint-url { display: block; margin: 0.25rem 0 0.75rem; overflow-wrap: anywhere; }
 
 /* toast */
 .toast {
@@ -389,8 +424,8 @@ code { font-size: 0.85em; color: var(--sage); word-break: break-all; }
   left: 50%;
   bottom: 1.25rem;
   transform: translateX(-50%);
-  background: var(--card-2);
-  border: 1px solid var(--sage);
+  background: var(--surface);
+  border: 1px solid var(--accent);
   color: var(--text);
   border-radius: 999px;
   padding: 0.55rem 1.1rem;

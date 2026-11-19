@@ -3,19 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>health log</title>
-<meta name="theme-color" content="#17181a">
-<meta name="description" content="my personal health log — mood, pain, meds, food, sleep, all straight into my google sheet.">
+<title>cuida.</title>
+<meta name="theme-color" content="#7c2d52">
+<meta name="description" content="cuida. — my personal health log. mood, pain, meds, food, sleep, all straight into my google sheet.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="cuida.">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="assets/icon-192.png">
-<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="icon" href="assets/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
 <div class="sticky-head">
 <header class="topbar">
-  <h1>health log</h1>
+  <h1>cuida.</h1>
   <div class="topbar-right">
     <span id="queue-indicator" class="queue" hidden><span id="queue-count">0</span> queued</span>
     <button id="settings-btn" type="button" class="text-btn">settings</button>
@@ -27,30 +35,26 @@
 </nav>
 </div>
 
-<!-- first-run setup: shown until an apps script url is saved on this device -->
+<!-- sign-in: shown until she's signed in with google on this device -->
 <div id="setup-screen" class="overlay" hidden>
   <div class="overlay-card">
     <h2>hey, let's get set up</h2>
-    <p>paste your apps script url to get started. it stays on this device only — it's never in the code, and it never goes anywhere except google.</p>
-    <p class="hint">it's the web app url from script.google.com — looks like <code>https://script.google.com/macros/s/.../exec</code></p>
-    <label class="field-label" for="setup-url">apps script url</label>
-    <input id="setup-url" type="url" inputmode="url" autocomplete="off" spellcheck="false"
-           placeholder="https://script.google.com/macros/s/.../exec">
-    <p id="setup-error" class="error" hidden>that doesn't look like an apps script web app url — it should start with https://script.google.com/macros/s/ and end with /exec</p>
-    <button id="setup-save" type="button" class="primary">save + start logging</button>
+    <p>sign in with google to connect the app to your sheet. the app already knows where your sheet lives — this just proves it's you.</p>
+    <div id="gsi-button" class="gsi-button"></div>
+    <p id="setup-error" class="error" hidden>couldn't load google sign-in — check your connection and reopen the app.</p>
+    <p id="setup-nourl" class="error" hidden>this device doesn't have the sheet connection saved yet, so signing in won't be enough on its own.</p>
+    <p class="hint">your sign-in stays on this device. the backend only answers requests carrying a valid token for your google account.</p>
   </div>
 </div>
 
-<!-- settings: view / change the stored url -->
+<!-- settings: who's signed in, and the endpoint this device talks to -->
 <section id="settings-panel" class="card" hidden>
   <h2>settings</h2>
-  <p class="hint">the apps script url is the key that lets this app write to my sheet. it's stored in this browser only.</p>
-  <label class="field-label" for="settings-url">apps script url</label>
-  <input id="settings-url" type="url" inputmode="url" autocomplete="off" spellcheck="false">
-  <p id="settings-error" class="error" hidden>that doesn't look like an apps script web app url — it should start with https://script.google.com/macros/s/ and end with /exec</p>
+  <p class="hint">signed in as <span id="settings-email"></span></p>
+  <p class="hint">the app talks to your sheet through this endpoint (saved on this device):</p>
+  <code id="settings-endpoint" class="endpoint-url"></code>
   <div class="row">
-    <button id="settings-save" type="button" class="primary">save url</button>
-    <button id="settings-clear" type="button">remove url</button>
+    <button id="settings-signout" type="button">sign out</button>
     <button id="settings-close" type="button">close</button>
   </div>
   <p id="settings-status" class="hint"></p>
@@ -297,6 +301,7 @@
 
 <div id="toast" class="toast" hidden></div>
 
+<script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/app.js"></script>
 <script src="js/dashboard.js"></script>
