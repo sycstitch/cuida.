@@ -144,11 +144,11 @@ function painStats(painRows, weekStart) {
   return { n: n, top: top, avgSev: a, sevWord: a == null ? null : nearestWord(a, SEV_WORDS) };
 }
 
-function medsStats(moodRows) {
+function medsStats(medsRows) {
   const days = {};
   let last = null;
-  moodRows.forEach(function (r) {
-    if (!((r[6] || "").trim())) return;
+  medsRows.forEach(function (r) {
+    if (!((r[1] || "").trim())) return;
     const d = cellDate(r[0]);
     if (!d) return;
     days[dayKey(d)] = true;
@@ -311,7 +311,7 @@ function renderDashboard(data) {
         : "")
     : emptyLine("no pain entries in the last 7 days."));
 
-  const meds = medsStats(rowsFor(tabs, "Mood Log"));
+  const meds = medsStats(rowsFor(tabs, "Meds Log"));
   setHtml("dash-meds", meds.streak > 0
     ? '<p class="stat">current streak: <span class="big">' + meds.streak + " night" + (meds.streak === 1 ? "" : "s") + "</span> :)</p>" +
       (meds.last ? '<p class="dash-sub">last logged ' + fmtDay(meds.last) + "</p>" : "")
@@ -367,8 +367,15 @@ async function loadDashboard(force) {
   errEl.hidden = true;
   if (!isConfigured()) {
     loadEl.hidden = true;
-    errEl.textContent = "connect the app first — paste your apps script url in settings.";
+    errEl.textContent = "no sheet connection saved on this device yet.";
     errEl.hidden = false;
+    return;
+  }
+  if (!isSignedIn()) {
+    loadEl.hidden = true;
+    errEl.textContent = "sign in with google to see your dashboard.";
+    errEl.hidden = false;
+    showSetup();
     return;
   }
   if (dashCache && !force) {
@@ -386,6 +393,9 @@ async function loadDashboard(force) {
       // the app is newer than the deployed script — the dashboard action
       // doesn't exist there yet.
       errEl.textContent = "the app updated but the script didn't — re-paste Code.gs in apps script and deploy a new version (same url), then refresh here.";
+    } else if (err.message === "not-signed-in") {
+      errEl.textContent = "your sign-in expired — sign in with google again, then refresh here.";
+      showSetup();
     } else if (!dashCache) {
       errEl.textContent = "couldn't reach the sheet — check your connection and try again.";
     }

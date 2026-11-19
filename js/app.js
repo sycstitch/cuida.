@@ -1,4 +1,4 @@
-// app.js — health log ui. vanilla js, no build step.
+// app.js — cuida. ui. vanilla js, no build step.
 //
 // vocab here must match the Lists tab in the sheet exactly, so the rows this
 // app writes line up with the chat-logged rows and the dashboard formulas.
@@ -20,7 +20,7 @@ const POOP_COLORS = ["Brown", "Green"];
 const BRISTOL = ["1", "2", "3", "4", "5", "6", "7"];
 const MEDS = ["Abilify", "buspirone"];
 const TAMPONS = ["light", "regular", "super", "super+", "ultra"];
-const TODAY_TABS = ["Mood Log", "Pain Log", "Food Log", "Vitals", "Period Log"];
+const TODAY_TABS = ["Mood Log", "Pain Log", "Food Log", "Vitals", "Period Log", "Meds Log", "Bathroom Log"];
 
 // meds target: 7pm. a dose before 7pm reads early, 7–8pm on time, 8pm+ late.
 // there is no "missed" state, ever — if it's not logged, it's just not logged.
@@ -226,6 +226,12 @@ async function submitLog(tab, values, label, done) {
     } else if (err.message === "not-configured") {
       showSetup();
       return;
+    } else if (err.message === "not-signed-in") {
+      // the entry was queued first, so nothing is lost — it syncs once
+      // she's signed in again.
+      toast("sign in again to sync — your entry is saved :)");
+      showSetup();
+      return;
     } else {
       toast("hmm, that didn't save — try again?");
       return;
@@ -283,19 +289,20 @@ $("pain-submit").addEventListener("click", function () {
 });
 
 // ---------- meds ----------
-// writes a mood log row with only date/time + meds taken filled. the
-// early/on time/late marker is display-only — it doesn't go in the sheet,
-// same as the rows already there.
+// meds live in their own tab now (Meds Log: date/time, meds taken, notes).
+// the early/on time/late marker is display-only — it doesn't go in the
+// sheet, same as the rows already there.
 $("meds-submit").addEventListener("click", function () {
   const meds = medsG.get();
-  const row = [getWhen(), "", "", "", "", "", meds.join(", "), ""];
-  submitLog("Mood Log", row, "meds: " + meds.join(", "), function () {
+  const row = [getWhen(), meds.join(", "), ""];
+  submitLog("Meds Log", row, "meds: " + meds.join(", "), function () {
     medsG.clear();
   });
 });
 
 // ---------- br ----------
-// one submit for the whole trip: pee + poop + blood land as ONE food log row.
+// one submit for the whole trip: pee + poop + blood land as ONE bathroom
+// log row (date/time, urine color, stool color, bristol types, blood, notes).
 $("br-submit").addEventListener("click", function () {
   const parts = [];
   const pee = peeG.first();
@@ -308,8 +315,15 @@ $("br-submit").addEventListener("click", function () {
   if (poopBits.length) parts.push("poop: " + poopBits.join(", "));
   if (bloodPicked) parts.push("blood");
   if (!parts.length) return;
-  const row = [getWhen(), "", "", "", parts.join("; ")];
-  submitLog("Food Log", row, parts.join("; "), function () {
+  const row = [
+    getWhen(),
+    pee || "",
+    colors.join(", "),
+    bristol.slice().sort().join(", "),
+    bloodPicked ? "blood" : "no blood",
+    "",
+  ];
+  submitLog("Bathroom Log", row, parts.join("; "), function () {
     peeG.clear(); poopG.clear(); bristolG.clear();
     bloodPicked = false;
     $("blood-toggle").classList.remove("on");
@@ -430,6 +444,18 @@ function describeRow(tab, values) {
     }
     case "Period Log":
       return { main: (values[1] ? "flow: " + values[1] : "period") + (values[4] ? " — " + values[4] : ""), note: "" };
+    case "Meds Log":
+      return { main: "meds: " + (values[1] || ""), note: values[2] || "" };
+    case "Bathroom Log": {
+      const bits = [];
+      if (values[1]) bits.push("pee: " + String(values[1]).toLowerCase());
+      const poop = [];
+      if (values[2]) poop.push(String(values[2]).toLowerCase());
+      if (values[3]) poop.push("bristol " + values[3]);
+      if (poop.length) bits.push("poop: " + poop.join(", "));
+      if (values[4] === "blood") bits.push("blood");
+      return { main: bits.join("; ") || "br", note: values[5] || "" };
+    }
     default:
       return { main: tab, note: note };
   }
@@ -445,8 +471,12 @@ async function loadToday() {
   if (isConfigured()) {
     const results = await Promise.allSettled(TODAY_TABS.map(fetchToday));
     let anyOk = false;
+    let authNeeded = false;
     results.forEach(function (r, i) {
-      if (r.status !== "fulfilled") return;
+      if (r.status !== "fulfilled") {
+        if (r.reason && r.reason.message === "not-signed-in") authNeeded = true;
+        return;
+      }
       anyOk = true;
       r.value.forEach(function (row) {
         const t = rowTime(row.values[0]);
@@ -456,6 +486,7 @@ async function loadToday() {
       });
     });
     if (!anyOk) errEl.hidden = false;
+    if (authNeeded) showSetup();
   }
 
   loadQueue().forEach(function (item) {
@@ -506,62 +537,58 @@ function escapeHtml(s) {
 
 $("today-refresh").addEventListener("click", loadToday);
 
-// ---------- setup + settings ----------
-// the apps script url is stored in localStorage on this device only. it is
-// never in the repo, and the app won't log anything until it's saved.
-const URL_PATTERN = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec\/?$/;
+// ---------- sign-in + settings ----------
+// sign-in replaces the old url-paste setup entirely: the endpoint url is
+// already saved on this device from v1, and the backend now checks a
+// google id token on every request. a returning user with a stored token
+// is never asked to sign in again until a token is actually rejected.
 
-function validUrl(u) { return URL_PATTERN.test((u || "").trim()); }
+let setupRenderTries = 0;
 
 function showSetup() {
-  $("setup-url").value = getBackendUrl();
   $("setup-error").hidden = true;
+  $("setup-nourl").hidden = isConfigured();
   $("setup-screen").hidden = false;
-  setTimeout(function () { $("setup-url").focus(); }, 100);
+  setupRenderTries = 0;
+  renderSetupButton();
+  // one tap, if her google session allows it — she may not need the
+  // button at all.
+  ensureAuth().then(function (ok) { if (ok) showOneTap(); });
 }
 function hideSetup() { $("setup-screen").hidden = true; }
 
-$("setup-save").addEventListener("click", function () {
-  const url = $("setup-url").value.trim();
-  if (!validUrl(url)) { $("setup-error").hidden = false; return; }
-  saveBackendUrl(url);
-  hideSetup();
-  toast("you're set — happy logging :)");
-  flushQueue();
-  loadToday();
-});
-$("setup-url").addEventListener("keydown", function (e) {
-  if (e.key === "Enter") $("setup-save").click();
-});
+// the google library loads async, so the button may not render on the
+// first try — retry for a few seconds, then say so.
+function renderSetupButton() {
+  if ($("setup-screen").hidden) return;
+  if (renderSignInButton($("gsi-button"))) return;
+  setupRenderTries++;
+  if (setupRenderTries < 10) {
+    setTimeout(renderSetupButton, 500);
+  } else {
+    $("setup-error").hidden = false;
+  }
+}
 
 $("settings-btn").addEventListener("click", function () {
   const panel = $("settings-panel");
   const opening = panel.hidden;
   panel.hidden = !opening;
   if (opening) {
-    $("settings-url").value = getBackendUrl();
-    $("settings-error").hidden = true;
-    $("settings-status").textContent = isConfigured()
-      ? "connected — logs go straight to the sheet."
-      : "no url saved yet — logging is paused until you save one.";
+    const email = getSignedInEmail();
+    $("settings-email").textContent = email || "nobody — sign in to log";
+    $("settings-endpoint").textContent = getBackendUrl() || "none saved on this device";
+    $("settings-status").textContent = isSignedIn()
+      ? "signed in — logs go straight to the sheet."
+      : "signed out — logging is paused until you sign in again.";
     panel.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 });
 $("settings-close").addEventListener("click", function () { $("settings-panel").hidden = true; });
-$("settings-save").addEventListener("click", function () {
-  const url = $("settings-url").value.trim();
-  if (!validUrl(url)) { $("settings-error").hidden = false; return; }
-  saveBackendUrl(url);
-  $("settings-error").hidden = true;
-  $("settings-status").textContent = "saved — logs go straight to the sheet.";
-  toast("url saved :)");
-  flushQueue();
-  loadToday();
-});
-$("settings-clear").addEventListener("click", function () {
-  clearBackendUrl();
-  $("settings-url").value = "";
-  $("settings-status").textContent = "url removed — logging is paused until you save one.";
+$("settings-signout").addEventListener("click", function () {
+  signOut();
+  $("settings-panel").hidden = true;
+  toast("signed out — see you next time :)");
   showSetup();
 });
 
@@ -574,7 +601,8 @@ if ("serviceWorker" in navigator) {
 
 updateQueueIndicator();
 refreshUI();
-if (!isConfigured()) {
+initAuth();
+if (!isSignedIn()) {
   showSetup();
 } else {
   flushQueue();
